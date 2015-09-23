@@ -1,1 +1,1 @@
-Because default .classpath project import for IntelliJ Idea doesn't handle Eclipse project files with parameters well. And I need to import bunch of Eclipse projects to Idea modules.
+Because default Eclispe projects import for IntelliJ Idea doesn't handle parameters well. And I need to import bunch of Eclipse projects to Idea modules.
