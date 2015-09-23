@@ -1,15 +1,58 @@
 (ns ideagen.core
   (:use [clojure.data.xml]))
 
-(defn create-module []
-  {:version 4
-   :exclude-output nil
-   :src ["src"]
-   :test ["test"]
-   :deps []})
+(defn create-module
+  ([] (create-module nil))
+  ([module]
+    (merge {:version 4
+            :exclude-output nil
+            :src ["src"]
+            :deps []}
+      module)))
 
 (defn with-library [module lib]
-  (merge module {:deps [lib]}))
+  (let [deps (:deps module)]
+    (update-in module [:deps] conj lib)))
+
+(defn- lib-scope [lib]
+  (when
+    (and (:scope lib) (not= (:scope lib) :compile))
+    {:scope (.toUpperCase (name (:scope lib)))}))
+
+(defn- lib-reference [lib]
+  (let [lib-ref (:ref lib)]
+    (when lib-ref
+      {:type "library"
+       :name (:name lib-ref)
+       :level "project"})))
+
+(defn- path-param [p]
+  (if (keyword? p)
+    (str "$" (name p) "$")
+    p))
+
+;; $MODULE_DIR$ is default parent dir for dependencies and project folders.
+;; jar:// protocol for libraries by default.
+
+(defn- construct-path [lib]
+  (let [dir (if (:param lib) (path-param (:param lib)) "$MODULE_DIR$")
+        lib (if (string? lib) lib (:jar lib))]
+  (str "jar://" dir "/" lib "!/")))
+
+(defn- library-entry [lib]
+  (element :orderEntry
+    (merge {:type "module-library"} (lib-scope lib) (lib-reference lib))
+    (when-not (:ref lib)
+      (sexp-element :library (when (:name lib) {:name (:name lib)})
+        [[:CLASSES {}
+          (map (fn [lib] [:root {:url (construct-path lib)} nil])
+            (:classes lib))]
+         [:JAVADOC {} nil]
+         [:SOURCES {} nil]]))))
+
+;; 'compile' scope is default scope.
+;; 'project' level library reference is default level.
+;; default module reference type is library.
 
 (defn- to-element [module]
   (element :module {:type "JAVA_MODULE" :version (:version module)}
@@ -17,16 +60,12 @@
       (element :exclude-output) ;; ADD EXCLUDE OUTPUT HERE
       (element :content {:url "file://$MODULE_DIR$"}
         (map #(sexp-element :sourceFolder {:url (str "file://$MODULE_DIR$/" %) :isTestSource false} nil) (:src module))
-        (map #(sexp-element :sourceFolder {:url (str "file://$MODULE_DIR$/" %) :isTestSource true} nil) (:test module)))
+        (when
+          (:test module)
+          (map #(sexp-element :sourceFolder {:url (str "file://$MODULE_DIR$/" %) :isTestSource true} nil) (:test module))))
       (element :orderEntry {:type "inheritedJdk"})
       (element :orderEntry {:type "sourceFolder" :forTests "false"})
-      (element :orderEntry {:type "module-library" :scope "TEST"}
-        (map (fn [lib]
-          (sexp-element :library {:name (:name lib)}
-            [[:CLASSES {}
-              (map (fn [jar] [:root {:url (str "jar://$APPLICATION_HOME_DIR$/" jar "!/")} nil]) (:classes lib))] ;; PATH SUPPORTING VARIABLES
-             [:JAVADOC {} nil]
-             [:SOURCES {} nil]])) (:deps module))))))
+      (map library-entry (:deps module)))))
 
 (defn emit-module [filepath module]
   (with-open [out-file (java.io.FileWriter. filepath)]
