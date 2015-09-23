@@ -1,8 +1,1 @@
-Idea project generator.
-==========================
-
-Create IntelliJ Idea projects and modules programmatically.
-
-Support Eclipse projects import.
-
-Properly support Eclipse projects import.
+Because default .classpath project import for IntelliJ Idea doesn't handle Eclipse project files with parameters well. And I need to import bunch of Eclipse projects to Idea modules.
