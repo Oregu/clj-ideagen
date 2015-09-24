@@ -6,13 +6,18 @@
   ([module]
     (merge {:version 4
             :exclude-output nil
-            :src ["src"]
+            :src []
             :deps []}
       module)))
 
+(defn with-src
+  ([module]
+    (with-src module "src"))
+  ([module dir]
+    (update-in module [:src] conj dir)))
+
 (defn with-library [module lib]
-  (let [deps (:deps module)]
-    (update-in module [:deps] conj lib)))
+  (update-in module [:deps] conj lib))
 
 (defn- lib-scope [lib]
   (when
@@ -50,6 +55,12 @@
          [:JAVADOC {} nil]
          [:SOURCES {} nil]]))))
 
+(defn- source-dir
+  ([dir]
+    (source-dir dir false))
+  ([dir test?]
+    (sexp-element :sourceFolder {:url (str "file://$MODULE_DIR$/" dir) :isTestSource test?} nil)))
+
 ;; 'compile' scope is default scope.
 ;; 'project' level library reference is default level.
 ;; default module reference type is library.
@@ -59,14 +70,14 @@
     (element :component {:name "NewModuleRootManager" :inherit-compiler-output true}
       (element :exclude-output) ;; ADD EXCLUDE OUTPUT HERE
       (element :content {:url "file://$MODULE_DIR$"}
-        (map #(sexp-element :sourceFolder {:url (str "file://$MODULE_DIR$/" %) :isTestSource false} nil) (:src module))
-        (when
-          (:test module)
-          (map #(sexp-element :sourceFolder {:url (str "file://$MODULE_DIR$/" %) :isTestSource true} nil) (:test module))))
+        (if (empty? (:src module))
+          (source-dir "src")
+          (map source-dir (:src module)))
+        (map #(source-dir % true) (:test module)))
       (element :orderEntry {:type "inheritedJdk"})
       (element :orderEntry {:type "sourceFolder" :forTests "false"})
       (map library-entry (:deps module)))))
 
-(defn emit-module [filepath module]
+(defn emit-module [module filepath]
   (with-open [out-file (java.io.FileWriter. filepath)]
     (indent (to-element module) out-file)))
