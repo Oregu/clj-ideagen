@@ -42,18 +42,18 @@
 (defn- construct-path [lib]
   (let [dir (if (:param lib) (path-param (:param lib)) "$MODULE_DIR$")
         lib (if (string? lib) lib (:jar lib))]
-  (str "jar://" dir "/" lib "!/")))
+    (str "jar://" dir "/" lib "!/")))
 
 (defn- library-entry [lib]
   (element :orderEntry
     (merge {:type "module-library"} (lib-scope lib) (lib-reference lib))
     (when-not (:ref lib)
-      (sexp-element :library (when (:name lib) {:name (:name lib)})
-        [[:CLASSES {}
-          (map (fn [lib] [:root {:url (construct-path lib)}])
-            (:classes lib))]
-         [:JAVADOC]
-         [:SOURCES]]))))
+      (element :library (when (:name lib) {:name (:name lib)})
+        (element :CLASSES {}
+          (map #(element :root {:url (construct-path %)})
+            (:classes lib)))
+        (element :JAVADOC)
+        (element :SOURCES)))))
 
 (defn- source-dir
   ([dir]
