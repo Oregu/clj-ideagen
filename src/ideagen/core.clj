@@ -50,16 +50,16 @@
     (when-not (:ref lib)
       (sexp-element :library (when (:name lib) {:name (:name lib)})
         [[:CLASSES {}
-          (map (fn [lib] [:root {:url (construct-path lib)} nil])
+          (map (fn [lib] [:root {:url (construct-path lib)}])
             (:classes lib))]
-         [:JAVADOC {} nil]
-         [:SOURCES {} nil]]))))
+         [:JAVADOC]
+         [:SOURCES]]))))
 
 (defn- source-dir
   ([dir]
     (source-dir dir false))
   ([dir test?]
-    (sexp-element :sourceFolder {:url (str "file://$MODULE_DIR$/" dir) :isTestSource test?} nil)))
+    (element :sourceFolder {:url (str "file://$MODULE_DIR$/" dir) :isTestSource test?})))
 
 ;; 'compile' scope is default scope.
 ;; 'project' level library reference is default level.
