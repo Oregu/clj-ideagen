@@ -41,8 +41,14 @@
 
 (defn- construct-path [lib]
   (let [dir (if (:param lib) (path-param (:param lib)) "$MODULE_DIR$")
-        lib (if (string? lib) lib (:jar lib))]
-    (str "jar://" dir "/" lib "!/")))
+        jar (if (string? lib) lib (:jar lib))]
+    (if (.startsWith jar "/")
+      (str "jar://" lib "!/")
+      (if (.endsWith jar ".jar")
+        (str "jar://" dir "/" jar "!/")
+        (if (empty? jar)
+          (str "file://" dir)
+          (str "file://" dir "/" jar))))))
 
 (defn- library-entry [lib]
   (element :orderEntry

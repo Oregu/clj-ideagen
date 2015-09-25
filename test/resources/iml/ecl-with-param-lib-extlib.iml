@@ -10,6 +10,15 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jstl-api-1.2.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES/>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
           <root url="jar://$HSQL_DB_LIB$/hsqldb.jar!/"/>
         </CLASSES>
         <JAVADOC/>
@@ -28,7 +37,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://home/oregusya/programming/java/eclipse-iml/lib/jstl-impl-1.2.jar!/"/>
+          <root url="jar:///home/oregusya/programming/java/eclipse-iml/lib/jstl-impl-1.2.jar!/"/>
         </CLASSES>
         <JAVADOC/>
         <SOURCES/>

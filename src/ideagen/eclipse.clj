@@ -15,9 +15,23 @@
 
 (defn get-classpath-param [path]
   (let [ind (.indexOf path "/")]
-    (if (< ind 0)
-      path
-      (.substring path 0 ind))))
+    (keyword
+      (if (< ind 0)
+        path
+        (.substring path 0 ind)))))
+
+(defn get-classpath-jar [path param]
+  (let [jar (.substring path (.length (name param)))]
+    (if (empty? jar)
+      ""
+      (.substring jar 1))))
+
+(defn lib-from-var [cp-entry]
+  (let [path (:path cp-entry)
+        param-val (get-classpath-param path)
+        jar-val   (get-classpath-jar path param-val)]
+    {:param param-val
+     :jar jar-val}))
 
 (defn with-classpath-seq [module cp-seq]
   (reduce
@@ -25,12 +39,11 @@
       (condp = (:kind cp-entry)
         :src (with-src module (:path cp-entry))
         :lib (with-lib module {:classes [(:path cp-entry)]})
-        :var (with-lib module {:classes [{:param (get-classpath-param (:path cp-entry))
-                                          :jar (:path cp-entry)}]})
+        :var (with-lib module {:classes [(lib-from-var cp-entry)]})
         module)) ;; nothing by default
+    module
     cp-seq))
 
 (defn eclipse-to-iml [ecl-file]
   (let [cp-seq (classpath-seq (read-classpath ecl-file))]
-    (-> (create-module)
-        (with-classpath-seq cp-seq))))
+    (with-classpath-seq (create-module) cp-seq)))

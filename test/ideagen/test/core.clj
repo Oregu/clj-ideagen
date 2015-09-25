@@ -3,7 +3,6 @@
         [clojure.data.xml]
         clojure.test))
 
-
 (deftest create-simple
   (is (=
     (parse (java.io.FileReader. "test/resources/iml/simple.iml"))
