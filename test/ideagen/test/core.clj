@@ -3,7 +3,7 @@
         [clojure.data.xml]
         clojure.test))
 
-(deftest create-simple
+(deftest simple-module
   (is (=
     (parse (java.io.FileReader. "test/resources/iml/simple.iml"))
     (do
@@ -19,7 +19,7 @@
       (parse (java.io.FileReader. "test/resources/iml/simple.gen.iml"))))))
 
 
-(deftest create-complex-paramed-with-module-and-project-deps
+(deftest complex-paramed-with-module-and-project-deps
   (is (=
     (parse (java.io.FileReader. "test/resources/iml/paramed-module-project-deps.iml"))
     (do
@@ -31,3 +31,22 @@
             (with-lib {:ref {:name "jstl-impl-1.2"}}))
         "test/resources/iml/paramed-module-project-deps.gen.iml")
       (parse (java.io.FileReader. "test/resources/iml/paramed-module-project-deps.gen.iml"))))))
+
+
+(deftest many-sources-different-deps-order
+  (is (=
+    (parse (java.io.FileReader. "test/resources/iml/more-sources-diff-order.iml"))
+    (do
+      (emit-module
+        (-> (create-module)
+            (with-lib {:classes ["lib/jstl-api-1.2.jar"]})
+            (with-src "main/java/gen-src")
+            (with-src "main/java/src")
+            (with-res "main/java/resources")
+            (with-test "main/test/src")
+            (with-test-res "main/test/resources")
+            (excluding "target")
+            (with-jdk)
+            (with-lib {:classes [{:jar "classes"}]}))
+        "test/resources/iml/more-sources-diff-order.gen.iml")
+      (parse (java.io.FileReader. "test/resources/iml/more-sources-diff-order.gen.iml"))))))
