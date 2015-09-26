@@ -1,6 +1,7 @@
 (ns ideagen.eclipse
-  (:use [clojure.data.xml]
-        [ideagen.core]))
+  (:use clojure.data.xml
+        ideagen.core)
+  (:gen-class))
 
 (defn read-classpath [file]
   (parse (java.io.FileReader. file)))
@@ -37,7 +38,7 @@
   (reduce
     (fn [module cp-entry]
       (condp identical? (:kind cp-entry)
-        :src (with-src module (:path cp-entry))
+        :src (with-src module (:path cp-entry)) ;; Check if contains test or resources, add appropriately
         :con (with-jdk module)
         :lib (with-lib module {:classes [(:path cp-entry)]})
         :var (with-lib module {:classes [(lib-from-var cp-entry)]})
@@ -48,3 +49,6 @@
 (defn eclipse-to-iml [ecl-file]
   (let [cp-seq (classpath-seq (read-classpath ecl-file))]
     (with-classpath-seq (create-module) cp-seq)))
+
+(defn -main [ecl iml]
+  (emit-module (eclipse-to-iml ecl) iml))

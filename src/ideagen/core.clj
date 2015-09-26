@@ -1,5 +1,5 @@
 (ns ideagen.core
-  (:use [clojure.data.xml]))
+  (:use clojure.data.xml))
 
 (defn create-module []
   {:version 4

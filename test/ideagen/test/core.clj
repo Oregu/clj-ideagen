@@ -1,6 +1,6 @@
 (ns ideagen.test.core
   (:use ideagen.core
-        [clojure.data.xml]
+        clojure.data.xml
         [clojure.test :exclude [with-test]]))
 
 (deftest simple-module
