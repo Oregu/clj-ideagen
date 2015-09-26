@@ -8,7 +8,9 @@
     (parse (java.io.FileReader. "test/resources/iml/simple.iml"))
     (do
       (emit-module
-        (-> (create-module {:test ["test"]})
+        (-> (create-module)
+            (with-src)
+            (with-test)
             (with-lib
               {:name "JUnit4"
                :scope :test
