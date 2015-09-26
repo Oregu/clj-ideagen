@@ -16,8 +16,26 @@
   ([module dir]
     (update-in module [:src] conj dir)))
 
+(defn with-test
+  ([module]
+    (with-test module "test"))
+  ([module dir]
+    module))
+
+(defn with-res [module dir]
+  module)
+
+(defn with-test-res [module dir]
+  module)
+
+(defn excluding [module dir]
+  module)
+
 (defn with-lib [module lib]
   (update-in module [:deps] conj lib))
+
+(defn with-jdk [module]
+  module)
 
 (defn- lib-scope [lib]
   (when

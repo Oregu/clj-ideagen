@@ -2,7 +2,7 @@
   (:use ideagen.core
   		ideagen.eclipse
         [clojure.data.xml]
-        clojure.test))
+        [clojure.test :exclude [with-test]]))
 
 (deftest iml-from-simple-eclipse-classpath
   (is (=
