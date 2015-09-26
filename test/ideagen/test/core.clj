@@ -9,6 +9,7 @@
     (do
       (emit-module
         (-> (create-module)
+            (with-jdk)
             (with-src)
             (with-test)
             (with-lib
@@ -27,6 +28,7 @@
     (do
       (emit-module
         (-> (create-module)
+            (with-jdk)
             (with-src)
             (with-lib {:classes ["lib/jstl-api-1.2.jar"]})
             (with-lib {:classes [{:param :SQL_DB_LIB :jar "hsqldb.jar"}]})
@@ -48,6 +50,7 @@
             (with-test "main/test/src")
             (with-test-res "main/test/resources")
             (excluding "target")
+            (with-lib {:classes [{:jar "lib/classes"}]})
             (with-jdk)
             (with-lib {:classes [{:jar "classes"}]}))
         "test/resources/iml/more-sources-diff-order.gen.iml")

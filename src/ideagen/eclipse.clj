@@ -36,8 +36,9 @@
 (defn with-classpath-seq [module cp-seq]
   (reduce
     (fn [module cp-entry]
-      (condp = (:kind cp-entry)
+      (condp identical? (:kind cp-entry)
         :src (with-src module (:path cp-entry))
+        :con (with-jdk module)
         :lib (with-lib module {:classes [(:path cp-entry)]})
         :var (with-lib module {:classes [(lib-from-var cp-entry)]})
         module)) ;; nothing by default

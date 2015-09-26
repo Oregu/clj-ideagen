@@ -9,17 +9,27 @@
 (defn- with-content [module type dir]
   (update-in module [:content] conj {type dir}))
 
+(defn with-lib [module lib]
+  (update-in module [:structure] conj lib))
+
+(defn with-jdk [module]
+  (update-in module [:structure] conj :jdk))
+
 (defn with-src
   ([module]     (with-src module "src"))
-  ([module dir] (with-content module :src dir)))
-
-(defn with-test
-  ([module]     (with-test module "test"))
-  ([module dir] (with-content module :test dir)))
+  ([module dir]
+    (let [module (with-content module :src dir)]
+      (if (not (pos? (.indexOf (:structure module) :src)))
+        (update-in module [:structure] conj :src)
+        module))))
 
 (defn with-res
   ([module]     (with-res module "resources"))
   ([module dir] (with-content module :res dir)))
+
+(defn with-test
+  ([module]     (with-test module "test"))
+  ([module dir] (with-content module :test dir)))
 
 (defn with-test-res
   ([module]     (with-test-res module "test-resources"))
@@ -29,15 +39,9 @@
   ([module]     (excluding module "out"))
   ([module dir] (with-content module :excl dir)))
 
-(defn with-lib [module lib]
-  (update-in module [:structure] conj lib))
-
-(defn with-jdk [module]
-  (update-in module [:structure] conj :jdk))
-
 (defn- lib-scope [lib]
   (when
-    (and (:scope lib) (not= (:scope lib) :compile))
+    (and (:scope lib) (not (identical? (:scope lib) :compile)))
     {:scope (.toUpperCase (name (:scope lib)))}))
 
 (defn- lib-reference [lib]
@@ -66,28 +70,31 @@
           (str "file://" dir)
           (str "file://" dir "/" jar))))))
 
-(defn- to-library-entry [lib]
-  (element :orderEntry
-    (merge {:type "module-library"} (lib-scope lib) (lib-reference lib))
-    (when-not (:ref lib)
-      (element :library (when (:name lib) {:name (:name lib)})
-        (element :CLASSES {}
-          (map #(element :root {:url (construct-path %)})
-            (:classes lib)))
-        (element :JAVADOC)
-        (element :SOURCES)))))
+(defn- to-order-entry [lib]
+  (condp identical? lib
+    :jdk (element :orderEntry {:type "inheritedJdk"})
+    :src (element :orderEntry {:type "sourceFolder" :forTests false})
+    (element :orderEntry
+      (merge {:type "module-library"} (lib-scope lib) (lib-reference lib))
+      (when-not (:ref lib)
+        (element :library (when (:name lib) {:name (:name lib)})
+          (element :CLASSES {}
+            (map #(element :root {:url (construct-path %)})
+              (:classes lib)))
+          (element :JAVADOC)
+          (element :SOURCES))))))
 
 (defn- to-content-type [k]
-  (condp = k
+  (condp identical? k
     :src  {:isTestSource false}
     :test {:isTestSource true}
     :res  {:type "java-resource"}
     :test-res {:type "java-test-resource"}
-    :excl nil))
+    nil))
 
 (defn- to-content-dir [entry]
   (let [entry (first entry)]
-    (element :sourceFolder
+    (element (if (identical? (key entry) :excl) :excludeFolder :sourceFolder)
       (merge
         {:url (str "file://$MODULE_DIR$/" (val entry))}
         (to-content-type (key entry))))))
@@ -96,7 +103,7 @@
 ;; 'project' level library reference is default level.
 ;; default module reference type is library.
 
-(defn- to-element [module]
+(defn- to-iml [module]
   (element :module {:type "JAVA_MODULE" :version (:version module)}
     (element :component {:name "NewModuleRootManager" :inherit-compiler-output true}
       (element :exclude-output)
@@ -104,10 +111,8 @@
         (if (empty? (:content module))
           (to-content-dir {:src "src"})
           (map to-content-dir (:content module))))
-      (element :orderEntry {:type "inheritedJdk"})
-      (element :orderEntry {:type "sourceFolder" :forTests "false"})
-      (map to-library-entry (:structure module)))))
+      (map to-order-entry (:structure module)))))
 
 (defn emit-module [module filepath]
   (with-open [out-file (java.io.FileWriter. filepath)]
-    (indent (to-element module) out-file)))
+    (indent (to-iml module) out-file)))
