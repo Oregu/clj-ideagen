@@ -15,6 +15,9 @@
 (defn with-jdk [module]
   (update-in module [:structure] conj :jdk))
 
+(defn with-module-dep [module dep-module]
+  (update-in module [:structure] conj {:module dep-module}))
+
 (defn with-src
   ([module]     (with-src module "src"))
   ([module dir]
@@ -74,15 +77,17 @@
   (condp identical? lib
     :jdk (element :orderEntry {:type "inheritedJdk"})
     :src (element :orderEntry {:type "sourceFolder" :forTests false})
-    (element :orderEntry
-      (merge {:type "module-library"} (lib-scope lib) (lib-reference lib))
-      (when-not (:ref lib)
+    (if (:module lib)
+      (element :orderEntry {:type "module" :module-name (:module lib)})
+      (element :orderEntry
+        (merge {:type "module-library"} (lib-scope lib) (lib-reference lib))
+        (when-not (:ref lib)
         (element :library (when (:name lib) {:name (:name lib)})
           (element :CLASSES {}
             (map #(element :root {:url (construct-path %)})
               (:classes lib)))
           (element :JAVADOC)
-          (element :SOURCES))))))
+          (element :SOURCES)))))))
 
 (defn- to-content-type [k]
   (condp identical? k

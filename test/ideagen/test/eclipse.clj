@@ -11,3 +11,8 @@
       (emit-module (eclipse-to-iml "test/resources/eclipse/ecl-with-param-lib-extlib.classpath")
       	"test/resources/iml/ecl-with-param-lib-extlib.gen.iml")
       (parse (java.io.FileReader. "test/resources/iml/ecl-with-param-lib-extlib.gen.iml"))))))
+
+
+;; TEST project dependency
+
+;; TEST -x exclude option for .classpath import

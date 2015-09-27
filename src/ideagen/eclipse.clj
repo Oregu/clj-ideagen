@@ -34,11 +34,24 @@
     {:param param-val
      :jar jar-val}))
 
+(defn- from-src-entry [module path]
+  (cond
+    (.startsWith path "/")
+      (with-module-dep module (.substring path 1))
+    (and (.contains path "test") (.contains path "resources"))
+      (with-test-res module path)
+    (.contains path "test")
+      (with-test module path)
+    (.contains path "resources")
+      (with-res module path)
+    :else
+      (with-src module path)))
+
 (defn with-classpath-seq [module cp-seq]
   (reduce
     (fn [module cp-entry]
       (condp identical? (:kind cp-entry)
-        :src (with-src module (:path cp-entry)) ;; Check if contains test or resources, add appropriately
+        :src (from-src-entry module (:path cp-entry))
         :con (with-jdk module)
         :lib (with-lib module {:classes [(:path cp-entry)]})
         :var (with-lib module {:classes [(lib-from-var cp-entry)]})
