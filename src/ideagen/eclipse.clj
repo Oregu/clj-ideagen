@@ -50,5 +50,15 @@
   (let [cp-seq (classpath-seq (read-classpath ecl-file))]
     (with-classpath-seq (create-module) cp-seq)))
 
-(defn -main [ecl iml]
-  (emit-module (eclipse-to-iml ecl) iml))
+(defn- with-excl-opts [module excl]
+  (if (empty? excl)
+    module
+    (reduce #(excluding %1 (.trim %2)) module (.split excl ","))))
+
+(defn -main [ecl & opts]
+  (let [opts (apply hash-map opts)
+        iml  (if (contains? opts "-d") (get opts "-d") "module.iml")
+        excl (when (contains? opts "-x") (get opts "-x"))]
+    (-> (eclipse-to-iml ecl)
+        (with-excl-opts excl)
+        (emit-module iml))))

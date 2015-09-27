@@ -1,4 +1,4 @@
-(defproject clj-ideagen "0.3.0"
+(defproject clj-ideagen "0.3.2"
   :description "Eclipse import for Intellij Idea done right."
   :url "http://github.com/Oregu/clj-ideagen"
   :main ideagen.eclipse
