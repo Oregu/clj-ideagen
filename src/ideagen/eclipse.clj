@@ -70,7 +70,7 @@
 
 (defn -main [ecl & opts]
   (let [opts (apply hash-map opts)
-        iml  (if (contains? opts "-d") (get opts "-d") "module.iml")
+        iml  (if (contains? opts "-o") (get opts "-o") "module.iml")
         excl (when (contains? opts "-x") (get opts "-x"))]
     (-> (eclipse-to-iml ecl)
         (with-excl-opts excl)
