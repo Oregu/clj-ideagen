@@ -28,7 +28,7 @@
       (.substring jar 1))))
 
 (defn lib-from-var [cp-entry]
-  (let [path (:path cp-entry)
+  (let [path (.replace (:path cp-entry) "\\" "/")
         param-val (get-classpath-param path)
         jar-val   (get-classpath-jar path param-val)]
     {:param param-val
