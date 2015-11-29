@@ -104,6 +104,11 @@
         {:url (str "file://$MODULE_DIR$/" (val entry))}
         (to-content-type (key entry))))))
 
+(defn- to-proj-module [entry]
+  (element :module
+    {:fileurl (str "file://$PROJECT_DIR$/" entry)
+     :filepath (str "$PROJECT_DIR$/" entry)}))
+
 ;; 'compile' scope is default scope.
 ;; 'project' level library reference is default level.
 ;; default module reference type is library.
@@ -118,6 +123,33 @@
           (map to-content-dir (:content module))))
       (map to-order-entry (:structure module)))))
 
+(defn- to-modules [proj]
+  (element :project {:version (:version proj)}
+    (element :component {:name "ProjectModuleManager"}
+      (element :modules nil
+        (map to-proj-module (:modules proj))))))
+
+(defn- to-misc [proj]
+  (element :project {:version (:version proj)}
+    (element :component
+      {:name "ProjectRootManager"
+       :version 2
+       :languageLevel (str "JDK_1_" (:jdk proj))
+       :default false
+       "assert-keyword" true
+       "project-jdk-type" "JavaSDK"
+       "project-jdk-name" (str "1." (:jdk proj))})))
+
 (defn emit-module [module filepath]
   (with-open [out-file (java.io.FileWriter. filepath)]
     (indent (to-iml module) out-file)))
+
+(defn emit-idea [proj filepath]
+  (let [ideaDir (java.io.File. filepath ".idea")]
+    (.mkdirs ideaDir)
+    (with-open [out-file (java.io.FileWriter.
+                            (java.io.File. ideaDir "modules.xml"))]
+      (indent (to-modules proj) out-file))
+    (with-open [out-file (java.io.FileWriter.
+                            (java.io.File. ideaDir "misc.xml"))]
+      (indent (to-misc proj) out-file))))
