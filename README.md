@@ -5,4 +5,4 @@ Usage
 
 .classpath import: ```java -jar clj-ideagen.jar path/to/.classpath -o ideaproj.iml -x target,bin```
 
-Generating project file: ```java -cp clj-ideagen.jar ideagen.project path/to/scan/dir -o where/to/out/.idea```
+Generating project file: ```java -cp clj-ideagen.jar ideagen.project path/to/scan/dir -o where/to/put/.idea```
