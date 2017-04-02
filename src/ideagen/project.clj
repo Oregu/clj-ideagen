@@ -31,6 +31,6 @@
 (defn -main [dirFrom & opts]
   (let [opts (apply hash-map opts)
         out  (if (contains? opts "-o") (get opts "-o") ".")
-        jdk  (if (contains? opts "-jdk") (Integer. (get opts "-jdk")) 7)
+        jdk  (if (contains? opts "-jdk") (Integer. (get opts "-jdk")) 8)
         deep (when (contains? opts "-d") (Integer. (get opts "-d")))]
     (gen-project dirFrom out deep jdk)))
