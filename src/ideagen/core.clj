@@ -138,7 +138,9 @@
        :default false
        "assert-keyword" true
        "project-jdk-type" "JavaSDK"
-       "project-jdk-name" (str "1." (:jdk proj))})))
+       "project-jdk-name" (str "1." (:jdk proj))}
+      (element :output
+        {:url "file://$PROJECT_DIR$/out"}))))
 
 (defn emit-module [module filepath]
   (with-open [out-file (java.io.FileWriter. filepath)]

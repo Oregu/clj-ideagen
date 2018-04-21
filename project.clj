@@ -1,4 +1,4 @@
-(defproject clj-ideagen "0.3.8"
+(defproject clj-ideagen "0.4.0"
   :description "Eclipse import for Intellij Idea with twists."
   :url "http://github.com/Oregu/clj-ideagen"
   :license {:name "MIT"
